@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title></title>
+
+    <style>
+        #filetsone {
+            max-width: 400px;
+            height: 200px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: "Quicksand", sans-serif;
+            font-weight: 500;
+            font-size: 20px;
+            cursor: pointer;
+            color: #cccccc;
+            border: 4px dashed #009578;
+            border-radius: 10px;
+        }
+
+        .submitButton {
+            width: 80px;
+            height: 20px;
+            background-color: #33cc33;
+            cursor: pointer;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .submitButton:hover {
+            background-color: #11ff11;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import FileTsone from "../build/filetsone.bundle.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            (async () => {
+                let filetsone = new FileTsone("#filetsone");
+                filetsone.setUploadMode('s3');
+                filetsone.s3Settings.initiateMultipartUrl = 'http://localhost:8080/api/upload/initiate';
+                filetsone.s3Settings.fetchPresignUrl = 'http://localhost:8080/api/upload/presign';
+                filetsone.s3Settings.finalizeMultipartUrl = 'http://localhost:8080/api/upload/finalize';
+
+                filetsone.registerHook('processing', (queue) => {
+                    console.log(`Processing queue`, queue);
+                });
+                filetsone.registerHook('dropped', (file) => {
+                    console.log(`Dropped file`, file);
+                });
+                filetsone.registerHook('initiate_multipart_upload', (file, url) => {
+                    console.log(`Initiating multipart upload`, file, url);
+                });
+                filetsone.registerHook('get_multipart_presign_urls', (key, totalChunks) => {
+                    console.log(`Fetching multipart presign urls`, key, totalChunks);
+                });
+                filetsone.registerHook('upload_multipart_chunk', (presignedUrls, chunks) => {
+                    console.log(`Uploading multipart chunk`, presignedUrls, chunks);
+                });
+
+                document.querySelector(".submitButton").addEventListener("click", () => filetsone.process());
+            })();
+        });
+
+
+    </script>
+
+    <div id="filetsone"></div>
+    <div class="submitButton">Upload files</div>
+</body>
+
+</html>
