@@ -1,4 +1,9 @@
 {
+  "name": "filetsone",
+  "version": "1.0.1",
+  "description": "A TypeScript package for uploading files via S3 multipart upload",
+  "main": "build/filetsone.bundle.js",
+  "files": ["build"],
   "devDependencies": {
     "@types/node": "^22.7.5",
     "gts": "^6.0.2",
@@ -10,10 +15,19 @@
   "scripts": {
     "lint": "gts lint",
     "clean": "gts clean",
-    "compile": "tsc",
+    "compile": "npx webpack",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run lint"
-  }
+    "posttest": "npm run lint",
+    "build": "npx webpack",
+    "publish": "npm publish --access public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kekke88/FileTsone.git"
+  },
+  "keywords": ["s3", "multipart", "upload", "typescript", "aws"],
+  "author": "Henric Johansson <hej@henricjohansson.se>",
+  "license": "MIT"
 }
