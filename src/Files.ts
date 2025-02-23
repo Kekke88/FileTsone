@@ -4,7 +4,7 @@ export class Files {
     public add(file: File) {
         this.queue.push(file);
     }
-    
+
     public clear() {
         this.queue = [];
     }

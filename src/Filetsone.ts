@@ -18,7 +18,7 @@ export default class FileTsone {
     s3Settings: S3Settings;
     settings: Settings;
     files: Files = new Files();
-    
+
     hooks: HookMap = new Map();
 
     constructor(selector: string) {
@@ -45,7 +45,7 @@ export default class FileTsone {
 
         this.triggerHook('processing', files);
 
-        for( let i: number = 0; i < files.length; i++) {
+        for (let i: number = 0; i < files.length; i++) {
             this.uploader.upload(this, files[i]);
         }
     }
@@ -69,18 +69,62 @@ export default class FileTsone {
         return element as T;
     }
 
+    private supportsFolderDrop() {
+        return (
+            "DataTransferItem" in window &&
+            "webkitGetAsEntry" in DataTransferItem.prototype
+        );
+    }
+
+    private addFilesFromFolder(entry: FileSystemDirectoryEntry, path: string) {
+        let reader = entry.createReader();
+
+        reader.readEntries((entries) => {
+            for (let entry of entries) {
+                if (entry.isFile) {
+                    //@ts-expect-error
+                    entry.file((file) => {
+                        file.dirPath = `${path}/${file.name}`;
+                        this.files.add(file);
+                    });
+                } else if (entry.isDirectory) {
+                    this.addFilesFromFolder(entry as FileSystemDirectoryEntry, `${path}/${entry.name}`);
+                }
+            }
+        })
+    }
+
+    private addFilesFromItems(items: DataTransferItemList) {
+        for (const item of items) {
+            const entry = item.webkitGetAsEntry();
+            if (entry && entry.isDirectory) {
+                this.addFilesFromFolder(entry as FileSystemDirectoryEntry, entry.name);
+            } else if (entry && entry.isFile) {
+                const file = item.getAsFile();
+                if (!file) continue;
+
+                this.files.add(file);
+                if (this.settings.uploadOnDrop) {
+                    this.uploader.upload(this, file);
+                }
+            }
+        }
+    }
+
     private setupEventListeners() {
         ["dragenter", "dragover", "dragleave", "drop"].forEach(event => {
             this.element.addEventListener(event, e => e.preventDefault());
         });
-        
-        this.element.addEventListener("drop", async (event: DragEvent) => {            
+
+        this.element.addEventListener("drop", async (event: DragEvent) => {
             const files = event.dataTransfer?.files;
+            this.triggerHook('dropped', files);
+            let items = event.dataTransfer?.items;
 
-            if (files && files.length > 0) {
-                for(let i: number = 0; i < files.length; i++) {
-                    this.triggerHook('dropped', files[i]);
-
+            if (this.supportsFolderDrop() && items) {
+                this.addFilesFromItems(items);
+            } else if (files && files.length > 0) {
+                for (let i: number = 0; i < files.length; i++) {
                     this.files.add(files[i]);
                     if (this.settings.uploadOnDrop) {
                         this.uploader.upload(this, files[i]);
