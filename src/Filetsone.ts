@@ -3,6 +3,7 @@ import { S3MultipartUploader } from "./S3MultipartUploader";
 import { ServerUploader } from "./ServerUploader";
 import { Uploader } from "./Uploader";
 import { Settings } from "./Settings";
+import { Files } from "./Files";
 
 type UploadMode = 's3' | 'server'
 
@@ -16,7 +17,8 @@ export default class FileTsone {
     uploader: Uploader = new ServerUploader();
     s3Settings: S3Settings;
     settings: Settings;
-    queue: File[] = [];
+    files: Files = new Files();
+    
     hooks: HookMap = new Map();
 
     constructor(selector: string) {
@@ -38,12 +40,13 @@ export default class FileTsone {
     }
 
     public process() {
-        if (this.queue === null) return;
+        let files = this.files.get();
+        if (files === null) return;
 
-        this.triggerHook('processing', this.queue);
+        this.triggerHook('processing', files);
 
-        for( let i: number = 0; i < this.queue.length; i++) {
-            this.uploader.upload(this, this.queue[i]);
+        for( let i: number = 0; i < files.length; i++) {
+            this.uploader.upload(this, files[i]);
         }
     }
 
@@ -78,7 +81,7 @@ export default class FileTsone {
                 for(let i: number = 0; i < files.length; i++) {
                     this.triggerHook('dropped', files[i]);
 
-                    this.queue.push(files[i]);
+                    this.files.add(files[i]);
                     if (this.settings.uploadOnDrop) {
                         this.uploader.upload(this, files[i]);
                     }

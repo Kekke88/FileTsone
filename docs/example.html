@@ -69,7 +69,20 @@
                     console.log(`Uploading multipart chunk`, presignedUrls, chunks);
                 });
 
-                document.querySelector(".submitButton").addEventListener("click", () => filetsone.process());
+                document.querySelector(".submitButton").addEventListener("click", () => {
+                    let files = filetsone.files.get();
+                    console.log(files);
+
+                    if (files.count > 1) {
+                        let firstFile = filetsone.files.get()[0];
+                        filetsone.files.clear();
+                        console.log(filetsone.files.get());
+                        filetsone.files.add(firstFile);
+                        console.log(filetsone.files.get());
+                    }
+
+                    filetsone.process();
+                });
             })();
         });
 
