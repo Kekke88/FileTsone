@@ -85,6 +85,7 @@ export default class FileTsone {
                     //@ts-expect-error
                     entry.file((file) => {
                         file.dirPath = `${path}/${file.name}`;
+                        this.triggerHook('dropped', file);
                         this.files.add(file);
                     });
                 } else if (entry.isDirectory) {
@@ -103,6 +104,7 @@ export default class FileTsone {
                 const file = item.getAsFile();
                 if (!file) continue;
 
+                this.triggerHook('dropped', file);
                 this.files.add(file);
                 if (this.settings.uploadOnDrop) {
                     this.uploader.upload(this, file);
@@ -118,13 +120,13 @@ export default class FileTsone {
 
         this.element.addEventListener("drop", async (event: DragEvent) => {
             const files = event.dataTransfer?.files;
-            this.triggerHook('dropped', files);
             let items = event.dataTransfer?.items;
 
             if (this.supportsFolderDrop() && items) {
                 this.addFilesFromItems(items);
             } else if (files && files.length > 0) {
                 for (let i: number = 0; i < files.length; i++) {
+                    this.triggerHook('dropped', files[i]);
                     this.files.add(files[i]);
                     if (this.settings.uploadOnDrop) {
                         this.uploader.upload(this, files[i]);
