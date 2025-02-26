@@ -126,8 +126,8 @@ export default class FileTsone {
                 this.addFilesFromItems(items);
             } else if (files && files.length > 0) {
                 for (let i: number = 0; i < files.length; i++) {
-                    this.triggerHook('dropped', files[i]);
                     this.files.add(files[i]);
+                    this.triggerHook('dropped', files[i]);
                     if (this.settings.uploadOnDrop) {
                         this.uploader.upload(this, files[i]);
                     }
