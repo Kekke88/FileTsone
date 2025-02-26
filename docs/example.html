@@ -73,13 +73,15 @@
                     let files = filetsone.files.get();
                     console.log(files);
 
-                    if (files.length > 1) {
+                    /*if (files.length > 1) {
+                        filetsone.files.remove(1);
+                        console.log(filetsone.files.get());
                         let firstFile = filetsone.files.get()[0];
                         filetsone.files.clear();
                         console.log(filetsone.files.get());
                         filetsone.files.add(firstFile);
                         console.log(filetsone.files.get());
-                    }
+                    }*/
 
                     filetsone.process();
                 });
