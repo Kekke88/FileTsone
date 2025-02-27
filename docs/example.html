@@ -68,12 +68,16 @@
                 filetsone.registerHook('upload_multipart_chunk', (presignedUrls, chunks) => {
                     console.log(`Uploading multipart chunk`, presignedUrls, chunks);
                 });
+                filetsone.registerHook('finalize_multipart_upload', (key, parts, result) => {
+                    console.log("Key", key);
+                    console.log("Result", result);
+                });
 
                 document.querySelector(".submitButton").addEventListener("click", () => {
                     let files = filetsone.files.get();
                     console.log(files);
 
-                    /*if (files.length > 1) {
+                    if (files.length > 1) {
                         filetsone.files.remove(1);
                         console.log(filetsone.files.get());
                         let firstFile = filetsone.files.get()[0];
@@ -81,7 +85,7 @@
                         console.log(filetsone.files.get());
                         filetsone.files.add(firstFile);
                         console.log(filetsone.files.get());
-                    }*/
+                    }
 
                     filetsone.process();
                 });

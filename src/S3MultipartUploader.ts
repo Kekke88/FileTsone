@@ -101,9 +101,6 @@ export class S3MultipartUploader implements Uploader {
     }
 
     private async finalizeUpload(key: string, parts: Part[]): Promise<any> {
-        if (this.filetsone) {
-            this.filetsone.triggerHook('finalize_multipart_upload', key, parts);
-        }
         const response = await fetch(this.settings.finalizeMultipartUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -115,6 +112,11 @@ export class S3MultipartUploader implements Uploader {
         }
 
         const result = await response.json();
+
+        if (this.filetsone) {
+            this.filetsone.triggerHook('finalize_multipart_upload', key, parts, result);
+        }
+        
         return result;
     }
 }
