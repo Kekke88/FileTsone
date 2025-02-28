@@ -72,6 +72,9 @@
                     console.log("Key", key);
                     console.log("Result", result);
                 });
+                filetsone.registerHook('multipart_upload_progress', (file, bytesUploaded) => {
+                    console.log("Percentage uploaded", ((bytesUploaded / file.size) * 100).toFixed(1));
+                });
 
                 document.querySelector(".submitButton").addEventListener("click", () => {
                     let files = filetsone.files.get();

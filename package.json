@@ -1,6 +1,6 @@
 {
   "name": "filetsone",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A TypeScript package for uploading files via S3 multipart upload",
   "main": "build/filetsone.bundle.js",
   "files": ["build"],

@@ -22,7 +22,7 @@ export class S3MultipartUploader implements Uploader {
         const chunks = this.splitFile(file);
         const key = await this.initiateUpload(file);
         const presignedUrls = await this.getPresignedUrls(key, chunks.length);
-        const parts = await this.uploadChunks(presignedUrls, chunks);
+        const parts = await this.uploadChunks(presignedUrls, chunks, file);
         return this.finalizeUpload(key, parts);
     }
 
@@ -73,29 +73,46 @@ export class S3MultipartUploader implements Uploader {
         return urls;
     }
 
-    private async uploadChunks(presignedUrls: string[], chunks: Blob[]): Promise<Part[]> {
+    private async uploadChunks(presignedUrls: string[], chunks: Blob[], file: File): Promise<Part[]> {
         if (this.filetsone) {
             this.filetsone.triggerHook('upload_multipart_chunk', presignedUrls, chunks);
         }
         const parts: Part[] = [];
+        let uploads: number[] = [];
 
         for (let i = 0; i < chunks.length; i++) {
-            const response = await fetch(presignedUrls[i], {
-                method: "PUT",
-                body: chunks[i],
+            await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open("PUT", presignedUrls[i], true);
+        
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        uploads[i] = event.loaded;
+                        this.filetsone?.triggerHook('multipart_upload_progress', file, uploads.reduce((a, b) => a + b, 0));
+                    }
+                };
+        
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const eTag = xhr.getResponseHeader("ETag");
+                        if (!eTag) {
+                            reject(new Error(`Missing ETag for part ${i + 1}`));
+                            return;
+                        }
+                        parts.push({ PartNumber: i + 1, ETag: eTag });
+                        uploads[i] = chunks[i].size;
+                        resolve(undefined);
+                    } else {
+                        reject(new Error(`Failed to upload part ${i + 1}, status: ${xhr.status}`));
+                    }
+                };
+        
+                xhr.onerror = () => reject(new Error(`Network error while uploading part ${i + 1}`));
+        
+                xhr.send(chunks[i]);
             });
-
-            if (!response.ok) {
-                throw new Error(`Failed to upload part ${i + 1}`);
-            }
-
-            const eTag = response.headers.get("ETag");
-            if (!eTag) {
-                throw new Error(`Missing ETag for part ${i + 1}`);
-            }
-
-            parts.push({ PartNumber: i + 1, ETag: eTag });
         }
+        
 
         return parts;
     }
@@ -116,7 +133,7 @@ export class S3MultipartUploader implements Uploader {
         if (this.filetsone) {
             this.filetsone.triggerHook('finalize_multipart_upload', key, parts, result);
         }
-        
+
         return result;
     }
 }
