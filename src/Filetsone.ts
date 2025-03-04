@@ -87,10 +87,6 @@ export default class FileTsone {
         fileInput.click();
     }
 
-    private getFilesFromInput() {
-        
-    }
-
     private getElement<T extends Element>(selector: string): T {
         const element = document.querySelector(selector);
         if (!element) {
