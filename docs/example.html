@@ -49,6 +49,7 @@
             (async () => {
                 let filetsone = new FileTsone("#filetsone");
                 filetsone.setUploadMode('s3');
+                filetsone.setFileSelector('#file-select');
                 filetsone.s3Settings.initiateMultipartUrl = 'http://localhost:8080/api/upload/initiate';
                 filetsone.s3Settings.fetchPresignUrl = 'http://localhost:8080/api/upload/presign';
                 filetsone.s3Settings.finalizeMultipartUrl = 'http://localhost:8080/api/upload/finalize';
@@ -100,6 +101,7 @@
 
     <div id="filetsone"></div>
     <div class="submitButton">Upload files</div>
+    <div id="file-select">Select files</div>
 </body>
 
 </html>

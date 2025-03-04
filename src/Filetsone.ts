@@ -29,6 +29,12 @@ export default class FileTsone {
         this.setupEventListeners();
     }
 
+    public setFileSelector(selector: string) {
+        let element = this.getElement<HTMLElement>(selector);
+
+        element.addEventListener('click', this.openFileDialog.bind(this));
+    }
+
     public setUploadMode(uploader: UploadMode) {
         this.mode = uploader;
 
@@ -59,6 +65,30 @@ export default class FileTsone {
 
     public triggerHook(name: string, ...args: any[]) {
         this.hooks.get(name)?.forEach(action => action(...args));
+    }
+
+    private openFileDialog() {
+        let fileInput = document.createElement('input');
+        fileInput.setAttribute('type', 'file');
+        fileInput.setAttribute('multiple', 'true');
+        fileInput.style.visibility = 'hidden';
+        fileInput.addEventListener('change', (event) => {
+            let files = fileInput.files;
+
+            if (files && files.length > 0) {
+                for (let i: number = 0; i < files.length; i++) {
+                    this.files.add(files[i]);
+                    this.triggerHook('dropped', files[i]);
+                }
+            }
+        })
+        fileInput.setAttribute('id', 'filetsone-file-input');
+
+        fileInput.click();
+    }
+
+    private getFilesFromInput() {
+        
     }
 
     private getElement<T extends Element>(selector: string): T {
